@@ -1,10 +1,18 @@
 use std::net::TcpListener;
 
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
-use zero2prod::run;
+use sqlx::{Connection, PgConnection, PgPool};
+use zero2prod::{configuration::get_configuration, startup::run};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:8000").expect("Failed to bind address");
-    run(listener)?.await
+    let config = get_configuration().expect("Failed to read configuration");
+
+    let listener =
+        TcpListener::bind(config.application.server_url()).expect("Failed to bind address");
+
+    let connection_pool = PgPool::connect(&config.database.connection_string())
+        .await
+        .expect("Failed to connect to Postgres.");
+
+    run(listener, connection_pool)?.await
 }
