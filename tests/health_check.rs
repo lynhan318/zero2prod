@@ -1,11 +1,17 @@
 use std::net::TcpListener;
 
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use zero2prod::{
     configuration::{get_configuration, DatabaseSettings},
     startup::run,
+    telemetry::{get_subscriber, init_subscriber},
 };
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let subscriber = get_subscriber("zero2prod".into(), "info".into());
+    init_subscriber(subscriber);
+});
 
 struct TestApp {
     pub address: String,
@@ -33,7 +39,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     let body = "name=kevin&email=kevin%40gmail.com";
     let client = reqwest::Client::new();
     let response = client
-        .post(&format!("{}/subscriptions", &app.address))
+        .post(&format!("{}/subscription", &app.address))
         .header("Content-type", "application/x-www-form-urlencoded")
         .body(body)
         .send()
@@ -63,7 +69,7 @@ async fn subscribe_returns_a_400_for_invalid_form_data() {
 
     for (invalid_body, error_message) in test_cases {
         let response = client
-            .post(&format!("{}/subscriptions", &app.address))
+            .post(&format!("{}/subscription", &app.address))
             .body(invalid_body)
             .header("Content-type", "application/x-www-form-urlencoded")
             .send()
@@ -102,6 +108,7 @@ async fn configure_database(config: &DatabaseSettings) -> PgPool {
 }
 
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let mut config = get_configuration().expect("Failed to read configuration");
 
