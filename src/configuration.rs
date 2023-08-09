@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub test: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -26,22 +27,25 @@ pub struct ApplicationSettings {
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let cwd = std::env::current_dir().expect("Failed to get current directory");
     let config_dir = cwd.join("configuration");
-
-    let settings =
-        Config::builder().add_source(config::File::from(config_dir.join("base")).required(true));
-
     let app_env: Environment = std::env::var("APP_ENVIRONMENT")
         .unwrap_or_else(|_| "local".into())
         .try_into()
         .expect("Failed to parse environment");
 
-    let settings =
-        settings.add_source(config::File::from(config_dir.join(app_env.as_str())).required(true));
-
-    settings
+    let config = Config::builder()
+        .add_source(config::File::from(config_dir.join("base")).required(true))
+        .add_source(config::File::from(config_dir.join(app_env.as_str())).required(true))
+        .add_source(
+            config::Environment::with_prefix("app")
+                .try_parsing(true)
+                .prefix_separator("_")
+                .separator("__"),
+        )
         .build()
         .expect("Failed to build configuration")
-        .try_deserialize()
+        .try_deserialize()?;
+    dbg!(&config);
+    Ok(config)
 }
 
 pub enum Environment {
