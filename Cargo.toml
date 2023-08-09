@@ -32,7 +32,6 @@ uuid = { version = "1.4.1", features=["v4"] }
 
 [dependencies.sqlx]
 version = "0.7.1"
-default-feautures = false
 features = [
   "runtime-tokio", 
   "tls-rustls",
