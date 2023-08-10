@@ -2,6 +2,22 @@ name: zero2prod
 region: sgp1
 services:
   - name: zero2prod
+    envs:
+      - key: APP_DATABASE__USERNAME
+        scrop: RUNTIME
+        value: ${newsletter.USERNAME}
+      - key: APP_DATABASE__PASSWORD
+        scrop: RUNTIME
+        value: ${newletters.PASSWORD}
+      - key: APP_DATABASE__HOST
+        scrop: RUNTIME
+        value: ${newsletter.HOSTNAME}
+      - key: APP_DATABASE__PORT
+        scrop: RUNTIME
+        value: ${newsletter.PORT}
+      - key: APP_DATABASE__DATABASE_NAME
+        scrop: RUNTIME
+        value: ${newsletter.DATABASE}
     dockerfile_path: Dockerfile
     source_dir: .
     github:
