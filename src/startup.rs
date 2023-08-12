@@ -11,7 +11,7 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server> {
         App::new()
             .wrap(TracingLogger::default())
             .route("/health_check", web::get().to(health_check))
-            .route("/subscription", web::post().to(subscribe))
+            .route("/subscriptions", web::post().to(subscribe))
             .app_data(db_pool.clone())
     })
     .listen(listener)?

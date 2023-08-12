@@ -6,4 +6,3 @@ database:
   username: "postgres"
   password: "password"
   database_name: "newsletter"
-test: 123
